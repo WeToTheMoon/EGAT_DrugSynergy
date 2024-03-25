@@ -12,7 +12,6 @@ class GenMotif(object):
 
     def create_clusters(self, smile):
         mol = Chem.MolFromSmiles(smile)
-        n_atoms = mol.GetNumAtoms()
 
         clusters = []
         for bond in mol.GetBonds():
@@ -57,6 +56,11 @@ class GenMotif(object):
         for cluster in clusters:
             cluster_smile = Chem.MolFragmentToSmiles(mol, cluster)
 
+            for index in cluster:
+                atom = Chem.MolFragmentToSmiles(mol, [index]).upper()
+                if atom not in self.atoms:
+                    self.atoms.append(atom)
+
             if cluster_smile.upper() in self.vocab.keys():
                 self.vocab[cluster_smile.upper()] += 1
             else:
@@ -100,6 +104,7 @@ class GenMotif(object):
         mol = Chem.MolFromSmiles(smile)
         clusters = [list(i) for i in self.create_clusters(smile)]
         new_clusters = []
+
         for i in range(len(clusters)):
             if Chem.MolFragmentToSmiles(mol, clusters[i]) not in self.vocab:  # Adds the molecule index as its own element (not represented by a motif)
                 for index in clusters[i]:
@@ -112,14 +117,14 @@ class GenMotif(object):
         encoding = {}
 
         for i in range(len(new_clusters)):
-            encoding.update({Chem.MolFragmentToSmiles(mol, new_clusters[i]): i})
+            encoding.update({str(new_clusters[i]) if isinstance(new_clusters[i], int) else ', '.join([str(j) for j in new_clusters[i]]): i})
 
         for cluster_index1 in range(len(new_clusters)):
             for cluster in new_clusters[cluster_index1+1:]:
                 edge = self.get_neighboor(new_clusters[cluster_index1], cluster, mol, encoding)
                 if edge:
                     edge_index += edge
-            node_features.append(self.vocab_embeddings[Chem.MolFragmentToSmiles(mol, new_clusters[cluster_index1])])
+            node_features.append(self.vocab_embeddings[Chem.MolFragmentToSmiles(mol, new_clusters[cluster_index1] if isinstance(new_clusters[cluster_index1], list) else [new_clusters[cluster_index1]]).upper()])
 
         edge_index = torch.tensor(edge_index).t().contiguous()
         node_features = torch.stack(node_features, dim=0)

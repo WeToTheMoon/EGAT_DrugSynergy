@@ -89,10 +89,10 @@ class Motif1(InMemoryDataset):
         pass
 
     def process(self):
-        dataset = pd.read_csv(self.root + "/raw/DrugCombRaw.csv")
+        dataset = torch.load(self.root + "/processed/DrugComb_Drug1.pt")
 
         dataprocessor = Processor_motif(dataset)
-        data_list, _ = dataprocessor.Process_Dataset()
+        data_list = dataprocessor.Process_Dataset()
         if self.pre_filter is not None:
             data_list = [data for data in data_list if self.pre_filter(data)]
 
@@ -120,10 +120,10 @@ class Motif2(InMemoryDataset):
         pass
 
     def process(self):
-        dataset = pd.read_csv(self.root + "/raw/DrugCombRaw.csv")
+        dataset = torch.load(self.root + "/processed/DrugComb_Drug2.pt")
 
         dataprocessor = Processor_motif(dataset)
-        _, data_list = dataprocessor.Process_Dataset()
+        data_list = dataprocessor.Process_Dataset()
         if self.pre_filter is not None:
             data_list = [data for data in data_list if self.pre_filter(data)]
 

@@ -41,19 +41,6 @@ class Processor_drug:
             Chem.rdchem.BondStereo.STEREOE,
         ]
 
-        # self.motifs = GenMotif()
-        # for index in self.dataset.index:
-        #     try:
-        #         if not (10 > torch.from_numpy(np.array(self.dataset["Loewe"][index]).astype("float32")) > -10):
-        #             smile1 = self.dataset["Drug1"][index]
-        #             smile2 = self.dataset["Drug2"][index]
-        #             self.motifs.update_MotifVocab(smile1)
-        #             self.motifs.update_MotifVocab(smile2)
-        #     except:
-        #         print(self.dataset["Loewe"][index])
-        # keys = self.motifs.get_MotifVocab()
-        # emb = self.motifs.get_vocab_embettings()
-
     def to_graph(self, smile):
         mol = Chem.MolFromSmiles(smile)
         new_molecule = []
@@ -170,20 +157,16 @@ class Processor_motif:
     def __init__(self, dataset):
         self.dataset = dataset
         self.motifs = GenMotif()
+        self.generate_motif_vocab()
 
     def generate_motif_vocab(self):
-        for batch in tqdm(self.dataset):
-            drug1 = batch[0]
-            drug2 = batch[1]
-            self.motifs.update_MotifVocab(drug1.smile)
-            self.motifs.update_MotifVocab(drug2.smile)
+        for smile in tqdm(self.dataset[0].smile):
+            self.motifs.update_MotifVocab(smile)
         keys = self.motifs.get_MotifVocab()
         emb = self.motifs.get_vocab_embettings()
 
-    def process_dataset(self):
+    def Process_Dataset(self):
         motifs1 = []
-        motifs2 = []
-        for batch in tqdm(self.dataset):
-            motifs1.append(self.motifs.generate_motifGraph(batch[0].smile))
-            motifs2.append(self.motifs.generate_motifGraph(batch[1].smile))
-        return motifs1, motifs2
+        for smile in tqdm(self.dataset[0].smile):
+            motifs1.append(self.motifs.generate_motifGraph(smile))
+        return motifs1
